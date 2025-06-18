@@ -1,0 +1,61 @@
+{% extends 'wallpapers/base.html' %}
+
+{% block title %}Image Details - Community Wallpapers{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <img src="{{ image.image.url }}" class="card-img-top img-fluid" alt="Community wallpaper">
+            <div class="card-body">
+                <p class="text-muted">
+                    Uploaded on {{ image.upload_date|date:"F j, Y" }}
+                </p>
+                {% if image.source_url %}
+                <p><strong>Source:</strong> <a href="{{ image.source_url }}" target="_blank" rel="noopener noreferrer">{{ image.source_url }}</a></p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{{ image.image.url }}" class="btn btn-primary" download>Download Original</a>
+                {% if request.user.is_staff and not image.is_approved %}
+                <a href="{% url 'approve_image' image.pk %}" class="btn btn-success">Approve Image</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Image Information</h3>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>Status:</strong> 
+                    {% if image.is_approved %}
+                    <span class="badge bg-success">Approved</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Pending Review</span>
+                    {% endif %}
+                </li>
+                {% if image.is_approved %}
+                <li class="list-group-item">
+                    <strong>Approved on:</strong> {{ image.approval_date|date:"F j, Y" }}
+                </li>
+                {% endif %}
+                <li class="list-group-item">
+                    <strong>Featured as Image of the Day:</strong> 
+                    {% if image.featured_days.exists %}
+                    <ul>
+                        {% for feature in image.featured_days.all %}
+                        <li>{{ feature.date|date:"F j, Y" }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <span class="text-muted">Not featured yet</span>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

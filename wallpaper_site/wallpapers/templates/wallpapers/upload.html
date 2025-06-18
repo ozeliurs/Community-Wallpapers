@@ -1,0 +1,143 @@
+{% extends 'wallpapers/base.html' %}
+
+{% block title %}Upload Image - Community Wallpapers{% endblock %}
+
+{% block extra_css %}
+<style>
+    #cap-container {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Import the main Cap.js widget script -->
+<script src="https://cdn.jsdelivr.net/npm/@cap.js/widget"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var capContainer = document.getElementById('cap-container');
+        var captchaTokenInput = document.getElementById('id_captcha_token');
+        
+        // Create cap-widget element
+        var capWidget = document.createElement('cap-widget');
+        capWidget.id = 'cap';
+        capWidget.setAttribute('data-cap-api-endpoint', 'https://cap.ozeliurs.com/bd4f205aa0ab/api/');
+        
+        // Add the widget to the container
+        capContainer.appendChild(capWidget);
+        
+        // Listen for solve event
+        capWidget.addEventListener('solve', function(e) {
+            captchaTokenInput.value = e.detail.token;
+        });
+        
+        // Automatically start the captcha challenge using the invisible mode API
+        setTimeout(function() {
+            // Use the programmatic API to trigger the captcha
+            const cap = new Cap({
+                apiEndpoint: 'https://cap.ozeliurs.com/bd4f205aa0ab/api/'
+            }, capWidget); // Use the existing widget
+            
+            cap.solve().then(function(solution) {
+                // The token will be handled by the 'solve' event listener above
+                console.log('Captcha automatically started');
+            }).catch(function(error) {
+                console.error('Error starting captcha:', error);
+            });
+        }, 500); // Small delay to ensure the widget is fully loaded
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">Upload an Image</h2>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link {% if upload_type == 'file' %}active{% endif %}" href="{% url 'upload_image' %}">Upload from File</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if upload_type == 'url' %}active{% endif %}" href="{% url 'upload_image_url' %}">Upload from URL</a>
+                    </li>
+                </ul>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <!-- Hidden captcha token field -->
+                    <input type="hidden" name="captcha_token" id="id_captcha_token" value="">
+                    
+                    {% for field in form %}
+                    {% if field.name != 'captcha_token' %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% if field.field.widget.input_type == 'file' %}
+                        <input type="{{ field.field.widget.input_type }}" 
+                               name="{{ field.html_name }}"
+                               id="{{ field.id_for_label }}" 
+                               class="form-control {% if field.errors %}is-invalid{% endif %}"
+                               accept="image/*">
+                        {% elif field.field.widget.input_type == 'textarea' %}
+                        <textarea name="{{ field.html_name }}"
+                                  id="{{ field.id_for_label }}"
+                                  class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                  rows="3">{{ field.value|default:'' }}</textarea>
+                        {% else %}
+                        <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                               name="{{ field.html_name }}"
+                               id="{{ field.id_for_label }}" 
+                               value="{{ field.value|default:'' }}"
+                               class="form-control {% if field.errors %}is-invalid{% endif %}">
+                        {% endif %}
+                        
+                        {% if field.help_text %}
+                        <div class="form-text text-muted">{{ field.help_text }}</div>
+                        {% endif %}
+                        
+                        {% if field.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in field.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Captcha Container -->
+                    <div class="mb-3">
+                        <label class="form-label">Captcha Verification</label>
+                        <div id="cap-container"></div>
+                        {% if form.captcha_token.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.captcha_token.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">Upload Image</button>
+                    </div>
+                </form>
+                
+                <div class="alert alert-info mt-4">
+                    <h5>Please Note:</h5>
+                    <ul>
+                        <li>Images must be appropriate and follow our community guidelines.</li>
+                        <li>All uploads are reviewed before becoming publicly visible.</li>
+                        <li>Make sure you have the rights to share any images you upload.</li>
+                        <li>Maximum file size: 10MB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

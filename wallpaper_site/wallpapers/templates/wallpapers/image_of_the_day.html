@@ -1,0 +1,97 @@
+{% extends 'wallpapers/base.html' %}
+
+{% block title %}Image of the Day - Community Wallpapers{% endblock %}
+
+{% block extra_css %}
+<style>
+    .image-container {
+        position: relative;
+        height: calc(100vh - 150px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #000;
+    }
+    .fullscreen-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    .image-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 15px;
+        transition: opacity 0.3s;
+    }
+    .image-info.hidden {
+        opacity: 0;
+    }
+    .info-toggle {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    {% if image_of_the_day %}
+    <div class="image-container">
+        <img src="{{ image_of_the_day.image.image.url }}" alt="Image of the day" class="fullscreen-image">
+        
+        <button class="info-toggle" id="toggleInfo">i</button>
+        
+        <div class="image-info" id="imageInfo">
+            <p class="text-muted">
+                Selected for {{ image_of_the_day.date|date:"F j, Y" }}
+            </p>
+            <a href="{% url 'image_detail' image_of_the_day.image.pk %}" class="btn btn-light">View Details</a>
+            <a href="{{ image_of_the_day.image.image.url }}" class="btn btn-outline-light" download>Download</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <h2>No Image of the Day Available</h2>
+        <p class="lead">There are no approved images in the system yet.</p>
+        <a href="{% url 'upload_image' %}" class="btn btn-primary">Upload an Image</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if image_of_the_day %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const infoToggle = document.getElementById('toggleInfo');
+        const imageInfo = document.getElementById('imageInfo');
+        
+        infoToggle.addEventListener('click', function() {
+            imageInfo.classList.toggle('hidden');
+        });
+        
+        // Auto-hide info after 5 seconds
+        setTimeout(function() {
+            imageInfo.classList.add('hidden');
+        }, 5000);
+    });
+</script>
+{% endif %}
+{% endblock %}
