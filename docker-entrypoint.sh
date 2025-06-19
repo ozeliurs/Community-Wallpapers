@@ -47,4 +47,4 @@ fi
 
 # Start Gunicorn server
 echo "Starting Gunicorn server..."
-exec gunicorn wallpaper_site.wsgi:application --bind 0.0.0.0:8000
+exec gunicorn wallpaper_site.wsgi:application --workers=8 --bind 0.0.0.0:8000
