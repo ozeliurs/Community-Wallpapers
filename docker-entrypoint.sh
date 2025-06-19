@@ -2,7 +2,7 @@
 set -e
 
 cd /app/wallpaper_site
-mkdir -p /app/wallpaper_site/static
+mkdir -p /app/wallpaper_site/static /app/wallpaper_site/staticfiles
 
 # Apply database migrations
 echo "Applying database migrations..."
