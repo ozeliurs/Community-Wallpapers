@@ -9,10 +9,7 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN useradd -m -r appuser && \
-   mkdir /app && \
    chown -R appuser /app
-
-WORKDIR /app
  
 COPY --chown=appuser:appuser . .
  
@@ -23,4 +20,4 @@ USER appuser
  
 EXPOSE 8000 
  
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
