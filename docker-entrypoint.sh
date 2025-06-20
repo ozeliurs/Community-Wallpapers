@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 
-mkdir -p /app/wallpaper_site/media
-mkdir -p /app/wallpaper_site/static
+# Create required directories
+mkdir -p /app/app/media
+mkdir -p /app/app/static
 
 # Apply database migrations
 echo "Applying database migrations..."
