@@ -1,6 +1,6 @@
 FROM python:3.13-slim
  
-RUN mkdir /app
+RUN mkdir -p /app
 WORKDIR /app
  
 RUN pip install --upgrade pip 
@@ -10,9 +10,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN useradd -m -r appuser && \
    chown -R appuser /app
- 
-COPY --chown=appuser:appuser . .
- 
+
+COPY --chown=appuser:appuser app /app/app/
+COPY --chown=appuser:appuser docker-entrypoint.sh /app/
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1 
  
