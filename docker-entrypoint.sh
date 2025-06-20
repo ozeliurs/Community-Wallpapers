@@ -6,7 +6,7 @@ mkdir -p /app/wallpaper_site/static
 
 # Apply database migrations
 echo "Applying database migrations..."
-python manage.py migrate --noinput
+python /app/manage.py migrate --noinput
 
 echo "Checking for existing superuser..."
 SUPERUSER_EXISTS=$(python -c "
@@ -41,4 +41,4 @@ else
     echo "Superuser already exists. Skipping creation."
 fi
 
-python3 manage.py runserver 0.0.0.0:8000
+python3 /app/manage.py runserver 0.0.0.0:8000
