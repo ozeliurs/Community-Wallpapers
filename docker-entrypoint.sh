@@ -5,13 +5,18 @@ set -e
 mkdir -p /app/app/media
 mkdir -p /app/app/static
 
+# Set working directory to properly find modules
+cd /app/app
+
 # Apply database migrations
 echo "Applying database migrations..."
-python /app/app/manage.py migrate --noinput
+python manage.py migrate --noinput
 
 echo "Checking for existing superuser..."
-SUPERUSER_EXISTS=$(python -c "
+SUPERUSER_EXISTS=$(cd /app/app && python -c "
 import os
+import sys
+sys.path.append('/app/app')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wallpaper_site.settings')
 import django
 django.setup()
@@ -25,8 +30,10 @@ if [ "$SUPERUSER_EXISTS" = "False" ]; then
     # Generate a random 16-character password
     ADMIN_PASSWORD=$(openssl rand -base64 12)
     # Create a Python script to create the superuser
-    python -c "
+    cd /app/app && python -c "
 import os
+import sys
+sys.path.append('/app/app')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wallpaper_site.settings')
 import django
 django.setup()
@@ -42,4 +49,5 @@ else
     echo "Superuser already exists. Skipping creation."
 fi
 
-python3 /app/app/manage.py runserver 0.0.0.0:8000
+# Start Django development server
+python manage.py runserver 0.0.0.0:8000
