@@ -6,7 +6,7 @@ mkdir -p /app/wallpaper_site/static
 
 # Apply database migrations
 echo "Applying database migrations..."
-python manage.py migrate --noinput
+python wallpaper_site/manage.py migrate --noinput
 
 echo "Checking for existing superuser..."
 SUPERUSER_EXISTS=$(python -c "
