@@ -1,64 +1,51 @@
 # Stage 1: Base build stage
-FROM python:3.12-slim AS builder
-
-# Create app directory
+FROM python:3.13-slim AS builder
+ 
+# Create the app directory
+RUN mkdir /app
+ 
+# Set the working directory
 WORKDIR /app
-
+ 
 # Set environment variables to optimize Python
 ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Install system dependencies required for building
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip
-
+ENV PYTHONUNBUFFERED=1 
+ 
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip 
+ 
+# Copy the requirements file first (better caching)
+COPY requirements.txt /app/
+ 
 # Install Python dependencies
-COPY requirements.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
-
+RUN pip install --no-cache-dir -r requirements.txt
+ 
 # Stage 2: Production stage
-FROM python:3.12-slim
-
-# Create app directory
+FROM python:3.13-slim
+ 
+RUN useradd -m -r appuser && \
+   mkdir /app && \
+   chown -R appuser /app
+ 
+# Copy the Python dependencies from the builder stage
+COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+ 
+# Set the working directory
 WORKDIR /app
-
-# Set environment variables
+ 
+# Copy application code
+COPY --chown=appuser:appuser . .
+ 
+# Set environment variables to optimize Python
 ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV DJANGO_SETTINGS_MODULE=wallpaper_site.settings
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    cron \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy pre-built wheels from builder stage
-COPY --from=builder /app/wheels /wheels
-RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
-    && rm -rf /wheels
-
-# Copy project
-COPY . .
-
-# Make entrypoint script executable
-RUN chmod +x /app/docker-entrypoint.sh
-
-# Create a non-root user to run the application
-RUN useradd -m appuser
-RUN chown -R appuser:appuser /app
-RUN mkdir -p /app/wallpaper_site/static /app/wallpaper_site/staticfiles /app/wallpaper_site/media
-RUN chown -R appuser:appuser /app/wallpaper_site/static /app/wallpaper_site/staticfiles /app/wallpaper_site/media
-
+ENV PYTHONUNBUFFERED=1 
+ 
 # Switch to non-root user
 USER appuser
-
-# Expose port
-EXPOSE 8000
-
-# Run the application
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ 
+# Expose the application port
+EXPOSE 8000 
+ 
+# Start the application using Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "my_docker_django_app.wsgi:application"]
