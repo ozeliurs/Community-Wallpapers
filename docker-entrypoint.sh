@@ -41,4 +41,4 @@ else
     echo "Superuser already exists. Skipping creation."
 fi
 
-python3 manage.py runserver 0.0.0.0:8000
+python3 wallpaper_site/manage.py runserver 0.0.0.0:8000
