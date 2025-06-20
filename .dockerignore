@@ -1,9 +1,11 @@
 # Git
 .git
 .gitignore
+.github/
 
 # Python
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -32,11 +34,11 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media
+!wallpaper_site/media/wallpapers/
 
 # Docker
-Dockerfile
 .dockerignore
-docker-compose.yml
+docker-compose*.yml
 
 # Editor directories and files
 .idea
@@ -44,5 +46,17 @@ docker-compose.yml
 *.swp
 *.swo
 
-# GitHub Actions
-.github/
+# Environment files
+.env
+.env.*
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/

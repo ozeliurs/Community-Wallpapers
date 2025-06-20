@@ -2,7 +2,14 @@
 set -e
 
 cd /app/wallpaper_site
-mkdir -p /app/wallpaper_site/static /app/wallpaper_site/staticfiles
+
+# Wait for the database to be ready (if using PostgreSQL or MySQL)
+# Uncomment the following if you're using a separate database service
+# until nc -z $DATABASE_HOST $DATABASE_PORT; do
+#     echo "Waiting for database at $DATABASE_HOST:$DATABASE_PORT..."
+#     sleep 2
+# done
+# echo "Database is available!"
 
 # Apply database migrations
 echo "Applying database migrations..."
@@ -46,6 +53,21 @@ else
     echo "Superuser already exists. Skipping creation."
 fi
 
-# Start Gunicorn server
+# Set up cron job for image of the day (if needed)
+# Uncomment and modify if you need cron jobs
+# echo "Setting up cron job for Image of the Day..."
+# echo "0 0 * * * cd /app/wallpaper_site && python manage.py select_image_of_the_day >> /var/log/cron.log 2>&1" > /tmp/crontab
+# crontab /tmp/crontab
+# rm /tmp/crontab
+# service cron start
+
+# Start Gunicorn server with optimal settings
 echo "Starting Gunicorn server..."
-exec gunicorn wallpaper_site.wsgi:application --workers=8 --bind 0.0.0.0:8000
+exec gunicorn wallpaper_site.wsgi:application \
+    --workers=$(( 2 * $(nproc) )) \
+    --bind 0.0.0.0:8000 \
+    --timeout 120 \
+    --log-level=info \
+    --access-logfile=- \
+    --error-logfile=- \
+    --capture-output
