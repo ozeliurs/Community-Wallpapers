@@ -3,6 +3,7 @@ set -e
 
 # Create required directories
 mkdir -p /app/app/media
+mkdir -p /app/app/media/wallpapers
 mkdir -p /app/app/static
 
 # Set working directory to properly find modules
